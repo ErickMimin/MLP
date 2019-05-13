@@ -40,5 +40,5 @@ end
 a = zeros(size(p, 1), 1);
 %Propagamos todos los datos de P
 for i = 1: size(p, 1)
-   a(i, 1) = Propagation(functionVector, W, b, transpose(p(i)));      
+   a(i, 1) = Propagation(functionVector, W, b, transpose(p(i, :)));      
 end
