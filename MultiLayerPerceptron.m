@@ -1,13 +1,13 @@
 %Limpiamos datos
 clear;clc;close all;
 %Archivo de entrada 
-inputFile = input('Ingrese el nombre del archivo con los datos de entrada P(.txt): ','s');
-input = load(inputFile + '.txt');
+inputFile = input('Ingrese el nombre del archivo con los datos de entrada P(.txt): ', 's');
+p = load(strcat('Dataset.txt'));
 %Archivo de targets
-targetFile = input('Ingrese el nombre del archivo con los targets(.txt):','s');
-target = load(targetFile + '.txt');
+targetFile = input('Ingrese el nombre del archivo con los targets(.txt): ', 's');
+%target = load(strcat(targetFile, '\.txt'));
 %Rango de la señal
-range = input('Ingrese el rango de la senal a aproximar [rango-minimo , rango-maximo]: ');
+range = input('Ingrese el rango de la senal a aproximar [rango-minimo , rango-maximo]:');
 %Arquitectura del MLP
 layerVector = input('Ingrese el vector de entradas de cada capa [1,S^1,S^2,...,S^n,1]: ');
 functionVector = input('Ingrese el vector de funciones de cada capa [1,2,3,...,2,1,3]: ');
@@ -20,8 +20,12 @@ min_error_train = input('Ingrese el valor maximo de error aceptado: ');
 epochval = input('Ingrese el numero de epocas de entrenamiento entre cada epoca de validacion: ');
 numval = input('Ingrese el numero maximo de incrementos consecutivos de error de validacion: ');
 %Configuracion del dataset 
-if(input('Ingrese 1) 80%-10%-10% o 2) 70%-15%-15%') == 1)
-    datasetConfig = [80 10 10];
+if(input('Ingrese 1) 80%-10%-10% o 2) 70%-15%-15%: ') == 1)
+    trainingDataset = p(1:round(size(p, 1)*0.8), :);
+    validationDataset = p(1:round(size(p, 1)*0.1), :);
+    testDataset = p(1:round(size(p, 1)*0.1), :);
 else
-    datasetConfig = [70 15 15];
+    trainingDataset = p(1:round(size(p, 1)*0.7), :);
+    validationDataset = p(1:round(size(p, 1)*0.15), :);
+    testDataset = p(1:round(size(p, 1)*0.15), :);
 end
