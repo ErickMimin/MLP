@@ -2,10 +2,10 @@
 clear;clc;close all;
 %Archivo de entrada 
 inputFile = input('Ingrese el nombre del archivo con los datos de entrada P(.txt): ', 's');
-p = load(strcat('Dataset.txt'));
+p = load(strcat(inputFile, '.txt'));
 %Archivo de targets
 targetFile = input('Ingrese el nombre del archivo con los targets(.txt): ', 's');
-%target = load(strcat(targetFile, '\.txt'));
+%target = load(strcat(targetFile, '.txt'));
 % %Rango de la señal
 % range = input('Ingrese el rango de la senal a aproximar [rango-minimo , rango-maximo]:');
 %Arquitectura del MLP
