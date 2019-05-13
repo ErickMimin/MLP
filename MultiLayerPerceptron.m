@@ -34,8 +34,8 @@ W = cell(size(layerVector, 2) - 1, 1);
 b = cell(size(layerVector, 2) - 1, 1);
 %Generacion aleatoria de pesos y bias
 for i = 2 : size(layerVector, 2)
-    W{i - 1} = 1 + (1+1) * rand(layerVector(i), layerVector(i - 1));
-    b{i - 1} = 1 + (1+1) * rand(layerVector(i), 1);
+    W{i - 1} = -1 + (1+1) * rand(layerVector(i), layerVector(i - 1));
+    b{i - 1} = -1 + (1+1) * rand(layerVector(i), 1);
 end
 a = zeros(size(p, 1), 1);
 %Propagamos todos los datos de P
