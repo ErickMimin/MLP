@@ -17,8 +17,8 @@ learningRate = 0.1;%input('Ingrese el factor de aprendizaje dentro del rango 0 a
 % epochmax = input('Ingrese el numero maximo de epocas (epochmax): ');
 % min_error_train = input('Ingrese el valor maximo de error aceptado: ');
 %Configuracion de validacion
-% epochval = input('Ingrese el numero de epocas de entrenamiento entre cada epoca de validacion: ');
-%numval = input('Ingrese el numero maximo de incrementos consecutivos de error de validacion: ');
+epochval = input('Ingrese el numero de epocas de entrenamiento entre cada epoca de validacion: ');
+numval = input('Ingrese el numero maximo de incrementos consecutivos de error de validacion: ');
 %Configuracion del dataset 
 % if(input('Ingrese 1) 80%-10%-10% o 2) 70%-15%-15%: ') == 1)
 %     trainingDataset = p(1:round(size(p, 1)*0.8), :);
@@ -45,11 +45,16 @@ end
 % de la epoca j.
 a = cell(size(p, 1), 1);
 %Propagamos todos los datos de P
+increases = 0;
 for i = 1: size(p, 1)
-   a{i} = Propagation(functionVector, mlpParam(end, :), transpose(p(i, :))); 
-   if(~isequal(target(i, :), a{i}{end}))
-       mlpParam(size(mlpParam, 1) + 1, :) = BackPropagation(mlpParam(end, :), learningRate, a{i, end}, target(i, :), functionVector);
-   end
+    if(mod(i, epochval) == 0)
+        increases = EarlyStopping(functionVector, mlpParam(end, :), conjuntoValidacion, targetsValidacion);
+    else
+       a{i} = Propagation(functionVector, mlpParam(end, :), transpose(p(i, :))); 
+       if(~isequal(target(i, :), a{i}{end}))
+           mlpParam(size(mlpParam, 1) + 1, :) = BackPropagation(mlpParam(end, :), learningRate, a{i, end}, target(i, :), functionVector);
+       end
+    end
 end
 
 
