@@ -57,7 +57,7 @@ increases = 0;
 
 for i = 1: size(p, 1)
     if(mod(i, epochval) == 0)
-       increases = EarlyStopping(functionVector, mlpParam(end, :), conjuntoValidacion, targetsValidacion);
+       increases = EarlyStopping(functionVector, mlpParam(end, :), conjValidacion);
        if(increases == numval)
            break;
        end
