@@ -14,21 +14,11 @@ functionVector = [1 2];%input('Ingrese el vector de funciones de cada capa [1,2,
 %Factor de aprendizaje
 learningRate = 0.1;%input('Ingrese el factor de aprendizaje dentro del rango 0 a 1: ');
 %Condiciones de finalizacion
-% epochmax = input('Ingrese el numero maximo de epocas (epochmax): ');
-% min_error_train = input('Ingrese el valor maximo de error aceptado: ');
+epochmax = input('Ingrese el numero maximo de epocas (epochmax): ');
+%min_error_train = input('Ingrese el valor maximo de error aceptado: ');
 %Configuracion de validacion
 epochval = input('Ingrese el numero de epocas de entrenamiento entre cada epoca de validacion: ');
 numval = input('Ingrese el numero maximo de incrementos consecutivos de error de validacion: ');
-%Configuracion del dataset 
-% if(input('Ingrese 1) 80%-10%-10% o 2) 70%-15%-15%: ') == 1)
-%     trainingDataset = p(1:round(size(p, 1)*0.8), :);
-%     validationDataset = p(1:round(size(p, 1)*0.1), :);
-%     testDataset = p(1:round(size(p, 1)*0.1), :);
-% else
-%     trainingDataset = p(1:round(size(p, 1)*0.7), :);
-%     validationDataset = p(1:round(size(p, 1)*0.15), :);
-%     testDataset = p(1:round(size(p, 1)*0.15), :);
-% end
 %Celdas para pesos y bias
 mlpParam = cell(1 ,2);
 %1 .- Celda de pesos
@@ -40,13 +30,6 @@ for i = 2 : size(layerVector, 2)
     mlpParam{1}{i - 1} = -1 + (1+1) * rand(layerVector(i), layerVector(i - 1));
     mlpParam{2}{i - 1} = -1 + (1+1) * rand(layerVector(i), 1);
 end
-% NOTA: El segundo indice de a, sera para guardar
-% valores de distintas epocas. a{i, j} se lee dato i
-% de la epoca j.
-a = cell(size(p, 1), 1);
-%Propagamos todos los datos de P
-increases = 0;
-
 %Ahora vamos a separar los datos, usamos la funcion separarDatos pasando
 %como parametros el arreglo/matriz de inputs y el arreglo/matriz de files
 %nos regresa 3 matrices 2 filan x n columnas (depende del numero de datos
@@ -54,24 +37,24 @@ increases = 0;
 %para acceder a los datos Ejemplo conjValidacion(1,x) dato input y
 %conjvaldacion(2,x) target respectivo
 [conjAprendizaje,conjValidacion,conjPrueba] = separarDatos(p,target);
-eFlag = true;
-for i = 1:size(conjAprendizaje, 2)
-    if(mod(i, epochval) == 0 && eFlag)
-        eFlag = false;
-        i = i - 1;
+for epoch = 1: epochmax
+    if(mod(epoch, epochval) == 0)
        increases = EarlyStopping(functionVector, mlpParam(end, :), conjValidacion);
        if(increases == numval)
            fprintf("EarlyStopping paro el programa");
            break;
        end
     else
-       eFlag = true;
-       a{i} = Propagation(functionVector, mlpParam(end, :), conjAprendizaje(1, i)); 
-       if(~isequal(conjAprendizaje(2, i), a{i}{end}))
-           mlpParam(size(mlpParam, 1) + 1, :) = BackPropagation(mlpParam(end, :), learningRate, a{i, end}, conjAprendizaje(2, i), functionVector);
-       end
+        a = cell(size(conjAprendizaje, 2), 1);
+        for i = 1:size(conjAprendizaje, 2)
+           a{i} = Propagation(functionVector, mlpParam(end, :), conjAprendizaje(1, i)); 
+           if(~isequal(conjAprendizaje(2, i), a{i}{end}))
+               mlpParam(size(mlpParam, 1) + 1, :) = BackPropagation(mlpParam(end, :), learningRate, a{i}, conjAprendizaje(2, i), functionVector);
+           end
+        end
     end
 end
+
 
 
 
