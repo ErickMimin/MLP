@@ -46,6 +46,15 @@ end
 a = cell(size(p, 1), 1);
 %Propagamos todos los datos de P
 increases = 0;
+
+%Ahora vamos a separar los datos, usamos la funcion separarDatos pasando
+%como parametros el arreglo/matriz de inputs y el arreglo/matriz de files
+%nos regresa 3 matrices 2 filan x n columnas (depende del numero de datos
+%en total
+%para acceder a los datos Ejemplo conjValidacion(1,x) dato input y
+%conjvaldacion(2,x) target respectivo
+[conjAprendizaje,conjValidacion,conjPrueba] = separarDatos(p,target);
+
 for i = 1: size(p, 1)
     if(mod(i, epochval) == 0)
         increases = EarlyStopping(functionVector, mlpParam(end, :), conjuntoValidacion, targetsValidacion);

@@ -1,4 +1,4 @@
-function [aprendizaje,validacion,prueba] = separarDatos(inputs)
+function [aprendizaje,validacion,prueba] = separarDatos(inputs, targets)
 [sz,m] = size(inputs);
 if sz>100
     sz_a = round(sz * .8);
@@ -23,33 +23,31 @@ prueba = zeros(2,sz_p);
 ip = 1;
 
 aprendizaje(1,1) = inputs(1);
-aprendizaje(2,1) = 1;
+aprendizaje(2,1) = targets(1);
 for i = 2:sz-1
     n = proporcion;
     
     if e>0
-        disp('e');
-        disp(e);
         n = n - 1;
     end
     if mod(i,2*(n+1)) == 1 && ip<=sz_p
         prueba(1,ip) = inputs(i);
-        prueba(2,ip) = i;
+        prueba(2,ip) = targets(i);
         ip = ip+1;
         if n == 3
             e = e-1;
         end
     elseif mod(i,2*(n+1)) == 6 && iv<=sz_v
         validacion(1,iv) = inputs(i);
-        validacion(2,iv) = i;
+        validacion(2,iv) = targets(i);
         iv = iv+1;
     else
         aprendizaje(1, ia) = inputs(i);
-        aprendizaje(2,ia) = i;
+        aprendizaje(2,ia) = targets(i);
         ia = ia+1;
     end
 end
 aprendizaje(1,ia) = inputs(sz);
-aprendizaje(2,ia) = sz;
+aprendizaje(2,ia) = targets(sz);
 end
 
