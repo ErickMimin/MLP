@@ -54,17 +54,21 @@ increases = 0;
 %para acceder a los datos Ejemplo conjValidacion(1,x) dato input y
 %conjvaldacion(2,x) target respectivo
 [conjAprendizaje,conjValidacion,conjPrueba] = separarDatos(p,target);
-
-for i = 1: size(p, 1)
-    if(mod(i, epochval) == 0)
-       increases = EarlyStopping(functionVector, mlpParam(end, :), conjuntoValidacion, targetsValidacion);
+eFlag = true;
+for i = 1:size(conjAprendizaje, 2)
+    if(mod(i, epochval) == 0 && eFlag)
+        eFlag = false;
+        i = i - 1;
+       increases = EarlyStopping(functionVector, mlpParam(end, :), conjValidacion);
        if(increases == numval)
+           fprintf("EarlyStopping paro el programa");
            break;
        end
     else
-       a{i} = Propagation(functionVector, mlpParam(end, :), transpose(p(i, :))); 
-       if(~isequal(target(i, :), a{i}{end}))
-           mlpParam(size(mlpParam, 1) + 1, :) = BackPropagation(mlpParam(end, :), learningRate, a{i, end}, target(i, :), functionVector);
+       eFlag = true;
+       a{i} = Propagation(functionVector, mlpParam(end, :), conjAprendizaje(1, i)); 
+       if(~isequal(conjAprendizaje(2, i), a{i}{end}))
+           mlpParam(size(mlpParam, 1) + 1, :) = BackPropagation(mlpParam(end, :), learningRate, a{i, end}, conjAprendizaje(2, i), functionVector);
        end
     end
 end
