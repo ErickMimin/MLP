@@ -1,5 +1,6 @@
 %Limpiamos datos
 clear;clc;close all;
+%====================== Introduccion de datos ======================%
 %Archivo de entrada 
 inputFile = 'Dataset';%input('Ingrese el nombre del archivo con los datos de entrada P(.txt): ', 's');
 p = load(strcat(inputFile, '.txt'));
@@ -10,15 +11,19 @@ target = load(strcat(targetFile, '.txt'));
 % range = input('Ingrese el rango de la senal a aproximar [rango-minimo , rango-maximo]:');
 %Arquitectura del MLP
 layerVector = [1 2 1];%input('Ingrese el vector de entradas de cada capa [1,S^1,S^2,...,S^n,1]: ');
-functionVector = [1 2];%input('Ingrese el vector de funciones de cada capa [1,2,3,...,2,1,3]: ');
+functionVector = [2 1];%input('Ingrese el vector de funciones de cada capa [1,2,3,...,2,1,3]: ');
 %Factor de aprendizaje
-learningRate = 0.1;%input('Ingrese el factor de aprendizaje dentro del rango 0 a 1: ');
+learningRate = 1 * 10^(-2);%input('Ingrese el factor de aprendizaje dentro del rango 0 a 1: ');
 %Condiciones de finalizacion
 epochmax = input('Ingrese el numero maximo de epocas (epochmax): ');
-%min_error_train = input('Ingrese el valor maximo de error aceptado: ');
+min_error_train = input('Ingrese el valor minimo de error aceptado: ');
 %Configuracion de validacion
 epochval = input('Ingrese el numero de epocas de entrenamiento entre cada epoca de validacion: ');
 numval = input('Ingrese el numero maximo de incrementos consecutivos de error de validacion: ');
+% Una prueba de backpropagation
+% erick = BackPropagation({{[-0.27;-0.41], [0.09 -0.17]},{[-0.48;-0.13], 0.48}}, 0.1, {1;[0.321;0.368];0.446}, 1.261 + 0.446,[2 1]);
+% erick2 = Propagation([2 1], {{[-0.27;-0.41], [0.09 -0.17]},{[-0.48;-0.13], 0.48}}, 1);
+%====================== Inicio del programa ======================%
 %Celdas para pesos y bias
 mlpParam = cell(1 ,2);
 %1 .- Celda de pesos
@@ -36,25 +41,91 @@ end
 %en total
 %para acceder a los datos Ejemplo conjValidacion(1,x) dato input y
 %conjvaldacion(2,x) target respectivo
-[conjAprendizaje,conjValidacion,conjPrueba] = separarDatos(p,target);
+[conjAprendizaje,conjValidacion,conjPrueba] = SeparateData(p,target);
+
+a = cell(size(conjAprendizaje, 2), 1);
+errorEpoch = zeros(1);
 for epoch = 1: epochmax
+    errorEpoch(epoch) = 0;
     if(mod(epoch, epochval) == 0)
-       increases = EarlyStopping(functionVector, mlpParam(end, :), conjValidacion);
+       % Epoca de validacion
+       for i = 1:size(conjValidacion, 2)
+           val = Propagation(functionVector, mlpParam(end, :), conjValidacion(1, i));
+           % Error de epoca
+           errorEpoch(epoch) = errorEpoch(epoch) + abs(conjValidacion(2, i) - val{end});
+       end
+       errorEpoch(epoch) = errorEpoch(epoch) / size(conjValidacion, 2);
+       % Early stopping
+       if(epoch - epochval > 0 && errorEpoch(epoch) > errorEpoch(epoch - epochval))
+           increases = increases + 1;
+       else
+           increases = 0;
+           mlpParamBeIn = mlpParam(end, :);
+       end
+       %increases = EarlyStopping(functionVector, mlpParam(end, :), conjValidacion);
        if(increases == numval)
-           fprintf("EarlyStopping paro el programa");
+           mlpParam(size(mlpParam, 1) + 1, :) = mlpParamBeIn;
+           fprintf("EarlyStopping paro el programa\n");
            break;
        end
     else
-        a = cell(size(conjAprendizaje, 2), 1);
         for i = 1:size(conjAprendizaje, 2)
-           a{i} = Propagation(functionVector, mlpParam(end, :), conjAprendizaje(1, i)); 
+           a{i} = Propagation(functionVector, mlpParam(end, :), conjAprendizaje(1, i));
            if(~isequal(conjAprendizaje(2, i), a{i}{end}))
                mlpParam(size(mlpParam, 1) + 1, :) = BackPropagation(mlpParam(end, :), learningRate, a{i}, conjAprendizaje(2, i), functionVector);
            end
+           % Suma de errores
+           errorEpoch(epoch) = errorEpoch(epoch) + abs(conjAprendizaje(2, i) - a{i}{end});
+        end
+        % Error de la epoca
+        errorEpoch(epoch) = errorEpoch(epoch) / size(conjAprendizaje, 2);
+        % Validacion de error minimo
+        if(errorEpoch(epoch) < min_error_train)
+            fprintf("Minimo error de entrenamiento aceptado\n");
+            break;
         end
     end
 end
+% Epoca de validacion
+aTest = cell(size(conjPrueba, 2), 1);
+errorTest = 0;
+for i = 1:size(conjPrueba, 2)
+   aTest{i} = Propagation(functionVector, mlpParam(end, :), conjPrueba(1, i));
+   errorTest = errorTest + abs(conjPrueba(2, i) - aTest{i}{end});
+end
+errorTest = errorTest / size(conjPrueba, 2);
 
+% Grafica errores de entranamiento y validacion
+errorEpochT = zeros(2, 1);
+carry = 0;
+for i = 1:length(errorEpoch)
+    if(mod(i, epochval) ~= 0)
+        carry = carry + 1;
+        errorEpochT(2, carry) = errorEpoch(1, i);
+        errorEpochT(1, carry) = i;
+    end
+end
+figure
+hold on;
+plot(errorEpoch, 'or','MarkerIndices',1:epochval:length(errorEpoch));
+plot(errorEpochT(1,:),errorEpochT(2,:));
+title("Errores de entranmiento y validación");
+xlabel('Época');
+ylabel('Error');
+hold off;
 
+% Grafica del conjunto de pruebas
+aTestG = zeros(1);
+for i = 1:size(conjPrueba, 2)
+   aTestG(1, i) = aTest{i}{end};
+end
+figure
+hold on;
+plot(conjPrueba(1, :), aTestG(1, :), 'x');
+plot(conjPrueba(1, :), conjPrueba(2, :), 'o');
+title("Target vs Salida");
+xlabel('X');
+ylabel('Y');
+hold off;
 
 

@@ -1,4 +1,4 @@
-function [aprendizaje,validacion,prueba] = separarDatos(inputs, targets)
+function [aprendizaje,validacion,prueba] = SeparateData(inputs, targets)
 [sz,m] = size(inputs);
 if sz>100
     sz_a = round(sz * .8);
