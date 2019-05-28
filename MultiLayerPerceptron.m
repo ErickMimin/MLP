@@ -2,10 +2,10 @@
 clear;clc;close all;mkdir('.', 'param')
 %====================== Introduccion de datos ======================%
 %Archivo de entrada 
-inputFile = '01_Polinomio_Entrada';%input('Ingrese el nombre del archivo con los datos de entrada P(.txt): ', 's');
+inputFile = './datasets/01_Polinomio_Entrada';%input('Ingrese el nombre del archivo con los datos de entrada P(.txt): ', 's');
 p = load(strcat(inputFile, '.txt'));
 %Archivo de targets
-targetFile = '01_Polinomio_Target';%input('Ingrese el nombre del archivo con los targets(.txt): ', 's');
+targetFile = './datasets/01_Polinomio_Target';%input('Ingrese el nombre del archivo con los targets(.txt): ', 's');
 target = load(strcat(targetFile, '.txt'));
 % %Rango de la señal
 % range = input('Ingrese el rango de la senal a aproximar [rango-minimo , rango-maximo]:');
@@ -75,19 +75,27 @@ end
 [conjAprendizaje,conjValidacion,conjPrueba] = SeparateData(p,target);
 
 a = cell(size(conjAprendizaje, 2), 1);
-errorEpoch = zeros(1);
+% Incializacion para errores
+errorEpochT = zeros(1);
+errorEpochV = zeros(1);
+carryT = 0;
+carryV = 0;
+% Inicio de epocas
 for epoch = 1: epochmax
-    errorEpoch(epoch) = 0;
     if(mod(epoch, epochval) == 0)
        % Epoca de validacion
+       carryV = carryV + 1;
+       errorEpochV(2, carryV) = 0;
        for i = 1:size(conjValidacion, 2)
            val = Propagation(functionVector, mlpParam(end, :), conjValidacion(1, i));
            % Error de epoca
-           errorEpoch(epoch) = errorEpoch(epoch) + abs(conjValidacion(2, i) - val{end});
+           errorEpochV(2, carryV) = errorEpochV(2, carryV) + abs(conjValidacion(2, i) - val{end});
        end
-       errorEpoch(epoch) = errorEpoch(epoch) / size(conjValidacion, 2);
+       % Error de validacion
+       errorEpochV(2, carryV) = errorEpochV(2, carryV) / size(conjValidacion, 2);
+       errorEpochV(1, carryV) = epoch;
        % Early stopping
-       if(epoch - epochval > 0 && errorEpoch(epoch) > errorEpoch(epoch - epochval))
+       if(carryV > 1 && errorEpochV(2, carryV) > errorEpochV(2, carryV - 1))
            increases = increases + 1;
        else
            increases = 0;
@@ -100,18 +108,21 @@ for epoch = 1: epochmax
            break;
        end
     else
+        carryT = carryT + 1;
+        errorEpochT(2, carryT) = 0;
         for i = 1:size(conjAprendizaje, 2)
            a{i} = Propagation(functionVector, mlpParam(end, :), conjAprendizaje(1, i));
            if(~isequal(conjAprendizaje(2, i), a{i}{end}))
                mlpParam(1, :) = BackPropagation(mlpParam(end, :), learningRate, a{i}, conjAprendizaje(2, i), functionVector);
            end
            % Suma de errores
-           errorEpoch(epoch) = errorEpoch(epoch) + abs(conjAprendizaje(2, i) - a{i}{end});
+           errorEpochT(2, carryT) = errorEpochT(2, carryT) + abs(conjAprendizaje(2, i) - a{i}{end});
         end
         % Error de la epoca
-        errorEpoch(epoch) = errorEpoch(epoch) / size(conjAprendizaje, 2);
+        errorEpochT(2, carryT) = errorEpochT(2, carryT) / size(conjAprendizaje, 2);
+        errorEpochT(1, carryT) = epoch;
         % Validacion de error minimo
-        if(errorEpoch(epoch) < min_error_train)
+        if(errorEpochT(2, carryT) < min_error_train)
             fprintf("Minimo error de entrenamiento aceptado\n");
             break;
         end
@@ -153,19 +164,10 @@ end
 errorTest = errorTest / size(conjPrueba, 2);
 
 % Grafica errores de entranamiento y validacion
-errorEpochT = zeros(2, 1);
-carry = 0;
-for i = 1:length(errorEpoch)
-    if(mod(i, epochval) ~= 0)
-        carry = carry + 1;
-        errorEpochT(2, carry) = errorEpoch(1, i);
-        errorEpochT(1, carry) = i;
-    end
-end
 figure
 hold on;
-plot(errorEpoch, 'or','MarkerIndices',1:epochval:length(errorEpoch));
-plot(errorEpochT(1,:),errorEpochT(2,:));
+plot(errorEpochV(1, :), errorEpochV(2, :), 'or');
+plot(errorEpochT(1, :), errorEpochT(2, :));
 title("Errores de entranmiento y validación");
 xlabel('Época');
 ylabel('Error');
@@ -184,12 +186,9 @@ title("Target vs Salida");
 xlabel('X');
 ylabel('Y');
 hold off;
-figure
-hold on;
-plot(conjPrueba(1, :), aTestG(1, :));
-plot(conjPrueba(1, :), conjPrueba(2, :));
-hold off;
 
+
+% Grafica de la funcion
 aGraph = cell(1);
 aG = zeros(size(p, 1), 1);
 for i = 1:size(p, 1)
