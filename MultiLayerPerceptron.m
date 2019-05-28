@@ -190,5 +190,20 @@ plot(conjPrueba(1, :), aTestG(1, :));
 plot(conjPrueba(1, :), conjPrueba(2, :));
 hold off;
 
+aGraph = cell(1);
+aG = zeros(size(p, 1), 1);
+for i = 1:size(p, 1)
+   aGraph{i} = Propagation(functionVector, mlpParam(end, :), p(i, 1));
+   aG(i, 1) = aGraph{i}{end};
+end
+
+figure
+hold on;
+plot(p(:, 1), target(:, 1), '-b');
+plot(p(:, 1), aG(:, 1), '-r');
+title("Function");
+xlabel('X');
+ylabel('Y');
+hold off;
 
 
