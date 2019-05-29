@@ -2,16 +2,16 @@
 clear;clc;close all;mkdir('.', 'param')
 %====================== Introduccion de datos ======================%
 %Archivo de entrada 
-inputFile = './datasets/01_Polinomio_Entrada';%input('Ingrese el nombre del archivo con los datos de entrada P(.txt): ', 's');
+inputFile = input('Ingrese el nombre del archivo con los datos de entrada P(.txt): ', 's');
 p = load(strcat(inputFile, '.txt'));
 %Archivo de targets
-targetFile = './datasets/01_Polinomio_Target';%input('Ingrese el nombre del archivo con los targets(.txt): ', 's');
+targetFile = input('Ingrese el nombre del archivo con los targets(.txt): ', 's');
 target = load(strcat(targetFile, '.txt'));
 % %Rango de la señal
 % range = input('Ingrese el rango de la senal a aproximar [rango-minimo , rango-maximo]:');
 %Arquitectura del MLP
-layerVector = [1 8 1];%input('Ingrese el vector de entradas de cada capa [1,S^1,S^2,...,S^n,1]: ');
-functionVector = [3 1];%input('Ingrese el vector de funciones de cada capa [1,2,3,...,2,1,3]: ');
+layerVector = input('Ingrese el vector de entradas de cada capa [1,S^1,S^2,...,S^n,1]: ');
+functionVector = input('Ingrese el vector de funciones de cada capa [1,2,3,...,2,1,3]: ');
 %Factor de aprendizaje
 learningRate = 1 * 10^(-2);%input('Ingrese el factor de aprendizaje dentro del rango 0 a 1: ');
 %Condiciones de finalizacion
@@ -205,4 +205,53 @@ xlabel('X');
 ylabel('Y');
 hold off;
 
+W = cell([1 size(layerVector, 2)-1]);
+B = cell([1 size(layerVector, 2)-1]);
+
+n = 0;
+for i = 1:size(layerVector, 2)-1
+    datos = load("./param/Pesos"+i+".txt");
+    Waux = vec2mat(datos,layerVector(i)*layerVector(i+1));
+    n = n + layerVector(i)*layerVector(i+1);
+    W{i} = Waux;
+    datos = load("./param/Bias"+i+".txt");
+    Baux = vec2mat(datos,layerVector(i+1));
+    n = n + layerVector(i+1);
+    B{i} = Baux;
+    
+    disp("W"+i);
+    disp(W{i});
+    disp("B"+i);
+    disp(B{i});
+end
+
+figure
+hold on;
+
+disp("n");
+disp(n);
+leyendas = strings([1,n]);
+
+for i = 1:size(W, 2)
+    for j = 1:size(W{i},2)
+        plot(1:size(W{i}(:,j),1),W{i}(:,j).','-o');
+        leyendas((i-1)*size(W{i},2)+j) = sprintf('W(%d,%d)',i,j);
+        n = (i-1)*size(W{i},2)+j;
+    end
+end
+
+for i = 1:size(B, 2)
+    for j = 1:size(B{i},2)
+        plot(1:size(B{i}(:,j),1),B{i}(:,j).','-o');
+        leyendas((i-1)*size(W{i},2)+j+n) = sprintf('B(%d,%d)',i,j);
+    end
+end
+disp("leyendas");
+disp(leyendas);
+
+title("Evolution");
+legend(leyendas,'Location','northeastoutside');
+xlabel('epocas');
+ylabel('valor');
+hold off;
 
