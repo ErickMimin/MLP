@@ -104,7 +104,7 @@ for epoch = 1: epochmax
        %increases = EarlyStopping(functionVector, mlpParam(end, :), conjValidacion);
        if(increases == numval)
            mlpParam(1, :) = mlpParamBeIn;
-           fprintf("EarlyStopping paro el programa\n" + epoch);
+           fprintf("EarlyStopping paro el programa\n");
            break;
        end
     else
@@ -162,6 +162,10 @@ for i = 1:size(conjPrueba, 2)
    errorTest = errorTest + abs(conjPrueba(2, i) - aTest{i}{end});
 end
 errorTest = errorTest / size(conjPrueba, 2);
+fprintf("Error Entrenamiento: %f\n", errorEpochT(2, end));
+fprintf("Error Validacion: %f\n", errorEpochV(2, end));
+fprintf("Error Entrenamiento: %f\n", errorTest);
+
 
 % Grafica errores de entranamiento y validacion
 figure
