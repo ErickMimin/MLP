@@ -5,7 +5,7 @@ clear;clc;close all;mkdir('.', 'param')
 inputFile = input('Ingrese el nombre del archivo con los datos de entrada P(.txt): ', 's');
 p = load(strcat(inputFile, '.txt'));
 %Archivo de targets
-targetFile = input('Ingrese el nombre del archivo con los targets(.txt): ', 's');
+targetFile =  input('Ingrese el nombre del archivo con los targets(.txt): ', 's');
 target = load(strcat(targetFile, '.txt'));
 % %Rango de la señal
 % range = input('Ingrese el rango de la senal a aproximar [rango-minimo , rango-maximo]:');
@@ -13,7 +13,7 @@ target = load(strcat(targetFile, '.txt'));
 layerVector = input('Ingrese el vector de entradas de cada capa [1,S^1,S^2,...,S^n,1]: ');
 functionVector = input('Ingrese el vector de funciones de cada capa [1,2,3,...,2,1,3]: ');
 %Factor de aprendizaje
-learningRate = 1 * 10^(-2);%input('Ingrese el factor de aprendizaje dentro del rango 0 a 1: ');
+learningRate = input('Ingrese el factor de aprendizaje dentro del rango 0 a 1: ');
 %Condiciones de finalizacion
 epochmax = input('Ingrese el numero maximo de epocas (epochmax): ');
 min_error_train = input('Ingrese el valor minimo de error aceptado: ');
@@ -162,10 +162,6 @@ for i = 1:size(conjPrueba, 2)
    errorTest = errorTest + abs(conjPrueba(2, i) - aTest{i}{end});
 end
 errorTest = errorTest / size(conjPrueba, 2);
-fprintf("Error Entrenamiento: %f\n", errorEpochT(2, end));
-fprintf("Error Validacion: %f\n", errorEpochV(2, end));
-fprintf("Error Entrenamiento: %f\n", errorTest);
-
 
 % Grafica errores de entranamiento y validacion
 figure
@@ -259,3 +255,6 @@ xlabel('epocas');
 ylabel('valor');
 hold off;
 
+fprintf("Error Entrenamiento: %f\n", errorEpochT(2, end));
+fprintf("Error Validacion: %f\n", errorEpochV(2, end));
+fprintf("Error Entrenamiento: %f\n", errorTest);
